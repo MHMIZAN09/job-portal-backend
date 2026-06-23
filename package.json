@@ -8,7 +8,10 @@
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio"
   },
   "repository": {
     "type": "git",
