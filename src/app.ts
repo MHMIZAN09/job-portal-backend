@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Basic route
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript + Express!");
+  res.send("welcome to the Job Portal API!");
 });
 
 export default app;
