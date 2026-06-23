@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Basic route
 app.get("/", (req: Request, res: Response) => {
-  res.send("welcome to the Job Portal API!");
+  res.send("Welcome to the Job Portal API!");
 });
 
 export default app;

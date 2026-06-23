@@ -1,5 +1,6 @@
 import app from "./app";
-const port = 3000; // The port your express server will be running on.
+import { envVars } from "./app/config";
+const port = envVars.PORT;
 
 const main = async () => {
   try {
