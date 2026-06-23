@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import status from "http-status";
-import AppError from "../utils/AppError";
+import AppError from "../shared/AppError";
 
 const notFound = (req: Request, _res: Response, next: NextFunction): void => {
   next(

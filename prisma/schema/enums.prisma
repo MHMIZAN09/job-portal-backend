@@ -1,5 +1,44 @@
 enum Role {
-  JOB_SEEKER
-  EMPLOYER
   ADMIN
+  EMPLOYER
+  JOB_SEEKER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  REMOTE
+  INTERNSHIP
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+enum PostType {
+  TEXT
+  IMAGE
+  JOB_UPDATE
+  ACHIEVEMENT
+}
+
+enum Visibility {
+  PUBLIC
+  CONNECTIONS
+  PRIVATE
 }

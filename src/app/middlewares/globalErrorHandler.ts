@@ -1,5 +1,5 @@
 import { ErrorRequestHandler } from "express";
-import AppError from "../utils/AppError";
+import AppError from "../shared/AppError";
 
 type ErrorWithStatus = Error & {
   status?: number | "fail" | "error";

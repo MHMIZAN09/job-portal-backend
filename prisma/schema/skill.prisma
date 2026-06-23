@@ -1,0 +1,28 @@
+model Skill {
+  id   String @id @default(uuid(7))
+  name String @unique
+
+  users JobSeekerSkill[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([name])
+  @@map("skills")
+}
+
+model JobSeekerSkill {
+  id        String           @id @default(uuid(7))
+  profileId String
+  jobSeeker JobSeekerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([skillId])
+  @@map("job_seeker_skills")
+}

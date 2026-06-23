@@ -1,0 +1,24 @@
+model Company {
+  id          String  @id @default(uuid(7))
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  companyName String
+  industry    String?
+
+  website String?
+  logo    String?
+
+  description String?
+  location    String?
+
+  employeeSize Int?
+  // Relations
+  jobs         Job[]
+  reviews      CompanyReview[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("companies")
+}

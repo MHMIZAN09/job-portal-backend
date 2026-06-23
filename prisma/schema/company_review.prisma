@@ -1,0 +1,18 @@
+model CompanyReview {
+  id String @id @default(uuid(7))
+
+  companyId   String
+  jobSeekerId String
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  jobSeeker User    @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+
+  rating Int
+  review String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, jobSeekerId])
+  @@map("company_reviews")
+}

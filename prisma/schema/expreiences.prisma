@@ -1,0 +1,17 @@
+model Experience {
+  id          String           @id @default(uuid(7))
+  jobSeekerId String
+  jobSeeker   JobSeekerProfile @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  companyName String
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobSeekerId])
+  @@map("experiences")
+}
