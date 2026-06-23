@@ -30,6 +30,7 @@ coverage
 
 # Bower dependency directory (https://bower.io/)
 bower_components
+apis.rest
 
 # node-waf configuration
 .lock-wscript
@@ -141,3 +142,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+/generated/prisma
+src/generated/prisma/
