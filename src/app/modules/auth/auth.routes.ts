@@ -12,4 +12,6 @@ router.get(
   checkAuth(Role.ADMIN, Role.EMPLOYER, Role.JOB_SEEKER),
   AuthController.getMe,
 );
+
+router.post("/refresh-token", AuthController.getNewToken);
 export const authRoutes = router;
