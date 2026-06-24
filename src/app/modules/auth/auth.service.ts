@@ -10,7 +10,20 @@ import { tokenUtils } from "../../utils/token";
 import { IUserLoginPayload, IUserRegisterPayload } from "./auth.interface";
 
 const RegisterUser = async (payload: IUserRegisterPayload) => {
-  const { name, email, password } = payload;
+  const { name, email, password, role, companyName, industry } = payload;
+
+  if (role === Role.EMPLOYER && (!companyName || !industry)) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Company name and industry are required for employers",
+    );
+  }
+  if (role === Role.ADMIN) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Admin accounts cannot be created through registration",
+    );
+  }
   const data = await auth.api.signUpEmail({
     body: {
       name,
@@ -22,25 +35,45 @@ const RegisterUser = async (payload: IUserRegisterPayload) => {
     throw new AppError(status.INTERNAL_SERVER_ERROR, "Failed to register user");
   }
   try {
-    if (data.user.role === Role.JOB_SEEKER) {
-      await prisma.jobSeekerProfile.create({
-        data: {
-          userId: data.user.id,
-        },
-      });
-    }
+    await prisma.$transaction(async (tx) => {
+      if (role !== Role.JOB_SEEKER) {
+        await tx.user.update({
+          where: { id: data.user.id },
+          data: { role },
+        });
+      }
+
+      if (role === Role.JOB_SEEKER) {
+        await tx.jobSeekerProfile.create({
+          data: {
+            userId: data.user.id,
+          },
+        });
+      }
+
+      if (role === Role.EMPLOYER) {
+        await tx.company.create({
+          data: {
+            userId: data.user.id,
+            companyName: companyName!.trim(),
+            industry: industry!.trim(),
+          },
+        });
+      }
+    });
   } catch (error: any) {
     await prisma.user.delete({ where: { id: data.user.id } });
     throw new AppError(
       status.INTERNAL_SERVER_ERROR,
-      "Failed to create profile",
+      "Failed to complete registration",
     );
   }
 
-  const userWithProfile = await prisma.user.findUnique({
+  const fullUser = await prisma.user.findUnique({
     where: { id: data.user.id },
     include: {
       profile: true,
+      company: true,
     },
   });
   const accessToken = tokenUtils.getAccessToken({
@@ -59,11 +92,10 @@ const RegisterUser = async (payload: IUserRegisterPayload) => {
   });
 
   return {
-    ...data,
+    user: fullUser,
     token: data.token,
     accessToken,
     refreshToken,
-    user: userWithProfile,
   };
 };
 
@@ -78,12 +110,22 @@ const LoginUser = async (payload: IUserLoginPayload) => {
   if (!data.user) {
     throw new AppError(status.UNAUTHORIZED, "Invalid email or password");
   }
-  const userWithProfile = await prisma.user.findUnique({
+  const fullUser = await prisma.user.findUnique({
     where: { id: data.user.id },
     include: {
       profile: true,
+      company: true,
     },
   });
+
+  // Check active
+  if (!fullUser?.isActive) {
+    throw new AppError(status.FORBIDDEN, "Your account is deactivated");
+  }
+
+  if (fullUser.isDeleted) {
+    throw new AppError(status.FORBIDDEN, "Your account is deleted");
+  }
 
   const accessToken = tokenUtils.getAccessToken({
     userId: data.user.id,
@@ -101,11 +143,10 @@ const LoginUser = async (payload: IUserLoginPayload) => {
   });
 
   return {
-    ...data,
+    user: fullUser,
     token: data.token,
     accessToken,
     refreshToken,
-    user: userWithProfile,
   };
 };
 
@@ -116,6 +157,7 @@ const getMe = async (user: IRequestUser) => {
     },
     include: {
       profile: true,
+      company: true,
     },
   });
 
