@@ -10,7 +10,11 @@ import AppError from "../../shared/AppError";
 import { IRequestUser } from "../../types";
 import { jwtUtils } from "../../utils/jwt";
 import { tokenUtils } from "../../utils/token";
-import { IUserLoginPayload, IUserRegisterPayload } from "./auth.interface";
+import {
+  IChangePasswordPayload,
+  IUserLoginPayload,
+  IUserRegisterPayload,
+} from "./auth.interface";
 
 const RegisterUser = async (payload: IUserRegisterPayload) => {
   const { name, email, password, role, companyName, industry } = payload;
@@ -232,9 +236,92 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     sessionToken: token,
   };
 };
+
+const changePassword = async (
+  payload: IChangePasswordPayload,
+  sessionToken: string,
+) => {
+  const session = await auth.api.getSession({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  if (!session) {
+    throw new AppError(status.UNAUTHORIZED, "Invalid session token");
+  }
+
+  const { currentPassword, newPassword } = payload;
+
+  const result = await auth.api.changePassword({
+    body: {
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    },
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  const accessToken = tokenUtils.getAccessToken({
+    userId: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    role: session.user.role,
+    emailVerified: session.user.emailVerified,
+  });
+  const refreshToken = tokenUtils.getRefreshToken({
+    userId: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    role: session.user.role,
+    emailVerified: session.user.emailVerified,
+  });
+
+  return {
+    ...result,
+    accessToken,
+    refreshToken,
+  };
+};
+
+const logoutUser = async (sessionToken: string) => {
+  const result = await auth.api.signOut({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  return result;
+};
+
+const verifyEmail = async (email: string, otp: string) => {
+  const result = await auth.api.verifyEmailOTP({
+    body: {
+      email,
+      otp,
+    },
+  });
+
+  if (result.status && !result.user.emailVerified) {
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        emailVerified: true,
+      },
+    });
+  }
+};
+
 export const AuthService = {
   RegisterUser,
   LoginUser,
   getMe,
   getNewToken,
+  changePassword,
+  logoutUser,
+  verifyEmail,
 };

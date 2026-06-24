@@ -3,6 +3,7 @@ import status from "http-status";
 import AppError from "../../shared/AppError";
 import { catchAsync } from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
+import { cookieUtils } from "../../utils/cookie";
 import { tokenUtils } from "../../utils/token";
 import { AuthService } from "./auth.service";
 
@@ -88,9 +89,72 @@ const getNewToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const sessionToken = req.cookies["better-auth.session_token"];
+  if (!sessionToken) {
+    throw new AppError(status.UNAUTHORIZED, "Session token is missing");
+  }
+
+  const result = await AuthService.changePassword(req.body, sessionToken);
+
+  const { accessToken, refreshToken, token } = result;
+
+  tokenUtils.setAccessTokenCookie(res, accessToken);
+  tokenUtils.setRefreshTokenCookie(res, refreshToken);
+  tokenUtils.setBetterAuthSessionCookies(res, token as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Password changed successfully",
+    data: result,
+  });
+});
+
+const logoutUser = catchAsync(async (req: Request, res: Response) => {
+  const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+  const result = await AuthService.logoutUser(betterAuthSessionToken);
+  cookieUtils.clearCookie(res, "accessToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  cookieUtils.clearCookie(res, "refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  cookieUtils.clearCookie(res, "better-auth.session_token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User logged out successfully",
+    data: result,
+  });
+});
+
+const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+  await AuthService.verifyEmail(email, otp);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Email verified successfully",
+  });
+});
+
 export const AuthController = {
   Register,
   Login,
   getMe,
   getNewToken,
+  changePassword,
+  logoutUser,
+  verifyEmail,
 };

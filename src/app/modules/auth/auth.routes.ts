@@ -13,5 +13,19 @@ router.get(
   AuthController.getMe,
 );
 
+router.post(
+  "/change-password",
+  checkAuth(Role.ADMIN, Role.EMPLOYER, Role.JOB_SEEKER),
+  AuthController.changePassword,
+);
+
 router.post("/refresh-token", AuthController.getNewToken);
+
+router.post(
+  "/logout",
+  checkAuth(Role.ADMIN, Role.EMPLOYER, Role.JOB_SEEKER),
+  AuthController.logoutUser,
+);
+
+router.post("/verify-email", AuthController.verifyEmail);
 export const authRoutes = router;

@@ -14,3 +14,8 @@ export interface IUserLoginPayload {
   email: string;
   password: string;
 }
+
+export interface IChangePasswordPayload {
+  newPassword: string;
+  currentPassword: string;
+}
