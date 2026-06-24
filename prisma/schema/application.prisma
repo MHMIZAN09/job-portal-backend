@@ -1,0 +1,20 @@
+model Application {
+  id          String @id @default(uuid(7))
+  jobId       String
+  jobSeekerId String
+
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobSeeker User @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+
+  coverLetter String?
+  resume      String?
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime          @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([jobSeekerId])
+  @@map("applications")
+}

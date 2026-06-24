@@ -1,22 +1,32 @@
-
 model User {
-  id            String    @id
+  id            String  @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean @default(false)
   image         String?
-  
-  role         Role      @default(JOB_SEEKER)
-  phoneNumber   String?
-  isActive      Boolean   @default(true)
 
-  isDeleted     Boolean   @default(false)
-  deletedAt     DateTime?
+  role        Role    @default(JOB_SEEKER)
+  phoneNumber String?
+  isActive    Boolean @default(true)
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  profile  JobSeekerProfile?
+  company  Company?
+  posts    Post[]
+  comments PostComment[]
+  likes    PostLike[]
+  shares   PostShare[]
+
+  applications Application[]
+  saveJobs     SaveJob[]
+  reviews      CompanyReview[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessions  Session[]
+  accounts  Account[]
 
   @@unique([email])
   @@map("user")
